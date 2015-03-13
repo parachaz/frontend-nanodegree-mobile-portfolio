@@ -14,6 +14,12 @@
  Creator:
  Cameron Pittman, Udacity Course Developer
  cameron *at* udacity *dot* com
+ 
+ Last Modified By: Zaheer Paracha.
+ To improve the FPS and overall performance I removed document.getElement() etc 
+ methods out of for loops. Instead I used variables to store these elements so 
+ we don't have to call documnet.get.... method again and again. 
+ 
  */
 
 // As you may have realized, this website randomly generates pizzas.
@@ -408,12 +414,12 @@ var pizzaElementGenerator = function (i) {
     return pizzaContainer;
 };
 
-/*Save pizzaSize div and randomPizzaContainer in variables 
- so that we don't have to 
- call document.querySelector everytime resize pizza is called. 
+/*Save pizzaSize div, randomPizzas and randomPizzaContainer in variables 
+ so that we don't have to get them again and again.
  */
-var pizzaSize = document.querySelector("#pizzaSize");
+var pizzaSizeDiv = document.querySelector("#pizzaSize");
 var randomPizzaContainerList = document.querySelectorAll(".randomPizzaContainer");
+var randomPizzaDiv = document.querySelector("#randomPizzas");
 // resizePizzas(size) is called when the slider in the "Our Pizzas" section of the website moves.
 var resizePizzas = function (size) {
     window.performance.mark("mark_start_resize");   // User Timing API function
@@ -422,13 +428,13 @@ var resizePizzas = function (size) {
     function changeSliderLabel(size) {
         switch (size) {
             case "1":
-                pizzaSize.innerHTML = "Small";
+                pizzaSizeDiv.innerHTML = "Small";
                 return;
             case "2":
-                pizzaSize.innerHTML = "Medium";
+                pizzaSizeDiv.innerHTML = "Medium";
                 return;
             case "3":
-                pizzaSize.innerHTML = "Large";
+                pizzaSizeDiv.innerHTML = "Large";
                 return;
             default:
                 console.log("bug in changeSliderLabel");
@@ -440,7 +446,7 @@ var resizePizzas = function (size) {
     // Returns the size difference to change a pizza element from one size to another. Called by changePizzaSlices(size).
     function determineDx(elem, size) {
         var oldwidth = elem.offsetWidth;
-        var windowwidth = document.querySelector("#randomPizzas").offsetWidth;
+        var windowwidth = randomPizzaDiv.offsetWidth;
         var oldsize = oldwidth / windowwidth;
 
         // TODO: change to 3 sizes? no more xl?
@@ -487,7 +493,7 @@ window.performance.mark("mark_start_generating"); // collect timing data
 // This for-loop actually creates and appends all of the pizzas when the page loads
 //Move pizzaDiv declaration out of the for loop.
 var pizzasDiv = document.getElementById("randomPizzas");
-    
+
 for (var i = 2; i < 100; i++) {
     pizzasDiv.appendChild(pizzaElementGenerator(i));
 }
@@ -517,13 +523,19 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 
 // Moves the sliding background pizzas based on scroll position
 
-    
+
 function updatePositions() {
     frame++;
     window.performance.mark("mark_start_frame");
-//var items = document.querySelectorAll('.mover');
+    /*Save scrollTop in a variable so we don't have to 
+     retrieve it again and again the loop.*/
+    var windowsScrollTop = document.body.scrollTop;
+    /*Instead of using items variable provided in the code,
+     we are using moversArray that already have all the pizzas 
+     that were added to the page.
+     */
     for (var i = 0; i < moversArray.length; i++) {
-        var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+        var phase = Math.sin((windowsScrollTop / 1250) + (i % 5));
         moversArray[i].style.left = moversArray[i].basicLeft + 100 * phase + 'px';
     }
 
@@ -540,9 +552,12 @@ function updatePositions() {
 // runs updatePositions on scroll
 window.addEventListener('scroll', updatePositions);
 
-// Generates the sliding pizzas when the page loads.
+
+//Save movingPizza div in variable to avoid getting it 200 times in the loop.
 var movingPizzasDiv = document.querySelector("#movingPizzas1");
-var moversArray=[];
+//Keep all moving pizzas in an array so we don't have to retrieve them again during updatePositions() method
+var moversArray = [];
+// Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function () {
     var cols = 8;
     var s = 256;
